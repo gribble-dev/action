@@ -1,0 +1,66 @@
+name: "Gribble"
+description: "Tiny bugs that find your bugs before you ship."
+author: "gribble-dev"
+branding:
+  icon: "anchor"
+  color: "blue"
+
+inputs:
+  mode:
+    description: "Audit mode: gate (deterministic checks + flow replay), review (AI review) or all."
+    required: false
+    default: "all"
+  working-directory:
+    description: "Directory that contains the audited app's .gribble/ folder, relative to the repository root."
+    required: false
+    default: "."
+  target:
+    description: "Monorepo target directory relative to working-directory (passed as `gribble audit --target`)."
+    required: false
+    default: ""
+  all:
+    description: "Audit every .gribble/ found under working-directory (passed as `gribble audit --all`)."
+    required: false
+    default: "false"
+  environment:
+    description: "Named environment from gribble.yaml `environments` (passed as `gribble audit --env`)."
+    required: false
+    default: ""
+  update-baseline:
+    description: "On pushes to the default branch, run with --update-baseline and write .gribble/baseline/ back (commit or PR per gribble.yaml baseline.update)."
+    required: false
+    default: "false"
+  comment:
+    description: "Post and maintain pull request comments (summary + per-finding review comments)."
+    required: false
+    default: "true"
+  max-comments:
+    description: "Maximum number of new per-finding review comments per run. The rest are listed in the summary comment."
+    required: false
+    default: "5"
+  fail-on:
+    description: "Fail the step when a new finding has at least this severity: critical, error, warn or none."
+    required: false
+    default: "error"
+  github-token:
+    description: "Token used for the check run, pull request comments and baseline write-back."
+    required: false
+    default: ${{ github.token }}
+  report-artifact:
+    description: "Upload the run directory (report, screenshots, snapshots) and the SARIF/JUnit files as the `gribble-report` artifact."
+    required: false
+    default: "true"
+
+outputs:
+  gate:
+    description: "Gate result reported by gribble: pass or fail."
+  new-findings:
+    description: "Number of new findings relative to the baseline (summed over targets)."
+  report-path:
+    description: "Absolute path of the report JSON (.gribble/runs/latest.json)."
+  sarif-path:
+    description: "Absolute path of the generated gribble.sarif file."
+
+runs:
+  using: "node24"
+  main: "dist/index.js"
