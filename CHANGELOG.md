@@ -1,5 +1,18 @@
 # @gribble/action
 
+## 0.4.0
+
+### Patch Changes
+
+- Updated dependencies [918f476]
+- Updated dependencies [f77e33b]
+- Updated dependencies [ea6b748]
+- Updated dependencies [b4e7ee5]
+- Updated dependencies [245e87b]
+- Updated dependencies [b3dc17d]
+- Updated dependencies [1596985]
+  - @gribble/core@0.4.0
+
 ## 0.3.0
 
 ### Patch Changes

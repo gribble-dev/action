@@ -134268,6 +134268,11 @@ function binName() {
 	return process.platform === "win32" ? "gribble.cmd" : "gribble";
 }
 /**
+* The AI review runtime `gribble` declares as optional peer dependencies. Nothing installs them
+* implicitly, so the npx fallback has to name them or `--mode review` cannot run at all.
+*/
+const REVIEW_RUNTIME_PACKAGES = ["@earendil-works/pi-ai", "@earendil-works/pi-coding-agent"];
+/**
 * Locate the `gribble` binary: the audited app's own `node_modules/.bin`, then
 * the repository root's, else `npx --yes gribble`.
 */
@@ -134305,9 +134310,14 @@ function resolveGribbleCommand(opts) {
 		prefixArgs: [],
 		how: "repo-root"
 	};
+	const runtime = opts.mode && opts.mode !== "gate" ? REVIEW_RUNTIME_PACKAGES : [];
 	return {
 		command: process.platform === "win32" ? "npx.cmd" : "npx",
-		prefixArgs: ["--yes", "gribble"],
+		prefixArgs: [
+			"--yes",
+			...["gribble", ...runtime].flatMap((name) => ["-p", name]),
+			"gribble"
+		],
 		how: "npx"
 	};
 }
@@ -134352,11 +134362,14 @@ var AuditError = class extends Error {
 	}
 };
 async function runAudit(inputs, opts) {
-	const cmd = resolveGribbleCommand(opts);
+	const cmd = resolveGribbleCommand({
+		...opts,
+		mode: inputs.mode
+	});
 	const args = [...cmd.prefixArgs, ...buildAuditArgs(inputs)];
 	const display = `${cmd.command} ${args.join(" ")}`;
 	info(`🐛 ${display}  (cwd: ${opts.workingDirectory}, binary via ${cmd.how})`);
-	if (cmd.how === "npx") warning("`gribble` is not installed in this repository; falling back to `npx --yes gribble`. Add it as a devDependency for reproducible runs.");
+	if (cmd.how === "npx") warning("`gribble` is not installed in this repository; falling back to npx. Add it as a devDependency for reproducible runs — plus `@earendil-works/pi-ai` and `@earendil-works/pi-coding-agent` when the mode includes review.");
 	const startedAt = Date.now();
 	let stdout = "";
 	const exitCode = await import_exec.exec(cmd.command, args, {
